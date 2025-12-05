@@ -1,0 +1,38 @@
+body {
+  background-color: #f8fafc;
+}
+
+.course-card-placeholder {
+  background: linear-gradient(135deg, #e0f2fe, #e5e7eb);
+  min-height: 150px;
+}
+
+.navbar-brand {
+  letter-spacing: 0.5px;
+}
+
+.hero-section {
+  background: radial-gradient(circle at top left, #eff6ff, #ffffff);
+  border-radius: 1rem;
+  padding: 2rem;
+}
+
+.avatar-placeholder {
+  width: 100px;
+  height: 100px;
+  background: #e5e7eb;
+  color: #4b5563;
+  font-size: 2rem;
+}
+
+.certificate {
+  max-width: 800px;
+  margin: 0 auto;
+  border: 2px solid #e5e7eb;
+}
+
+@media (max-width: 767.98px) {
+  .hero-section {
+    padding: 1.5rem;
+  }
+}

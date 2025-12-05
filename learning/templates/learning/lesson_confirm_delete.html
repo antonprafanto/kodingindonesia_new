@@ -1,0 +1,16 @@
+{% extends "learning/base.html" %}
+
+{% block title %}Hapus Materi - {{ lesson.title }}{% endblock %}
+
+{% block content %}
+  <h1 class="h4 mb-3">Hapus Materi</h1>
+  <div class="alert alert-warning">
+    Apakah Anda yakin ingin menghapus materi <strong>{{ lesson.title }}</strong> dari kursus
+    <strong>{{ course.title }}</strong>? Tindakan ini tidak dapat dibatalkan.
+  </div>
+  <form method="post">
+    {% csrf_token %}
+    <button type="submit" class="btn btn-danger">Ya, hapus</button>
+    <a href="{% url 'learning:course_edit' course.slug %}" class="btn btn-link">Batal</a>
+  </form>
+{% endblock %}

@@ -1,0 +1,161 @@
+{% extends "learning/base.html" %}
+
+{% block title %}{{ course.title }} - EduPlatform{% endblock %}
+
+{% block content %}
+  <div class="row mb-4">
+    <div class="col-md-8">
+      <h1 class="h3 mb-2">{{ course.title }}</h1>
+      <p class="text-muted mb-1">
+        Oleh {{ course.instructor.get_full_name|default:course.instructor.username }}
+        {% if course.category %}
+          • Kategori: {{ course.category.name }}
+        {% endif %}
+        {% if average_rating %}
+          • Rating: {{ average_rating|floatformat:1 }}/5
+        {% endif %}
+      </p>
+      <div class="mb-3">
+        {% for tag in course.tags.all %}
+          <span class="badge bg-light text-dark border me-1">{{ tag.name }}</span>
+        {% endfor %}
+      </div>
+      <p class="lead">{{ course.short_description }}</p>
+      <hr>
+      <h5>Deskripsi Kursus</h5>
+      <div class="course-description">
+        {{ course.description|safe }}
+      </div>
+    </div>
+    <div class="col-md-4">
+      <div class="card shadow-sm border-0">
+        {% if course.thumbnail %}
+          <img src="{{ course.thumbnail.url }}" class="card-img-top" alt="{{ course.title }}">
+        {% endif %}
+        <div class="card-body">
+          <h5 class="card-title">Ringkasan Kursus</h5>
+          <p class="card-text small text-muted mb-1">
+            Level: {{ course.get_level_display }}
+          </p>
+          <p class="card-text small text-muted mb-3">
+            Total materi: {{ course.lessons.count }} modul
+          </p>
+
+          {% if user.is_authenticated %}
+            {% if enrollment %}
+              <a href="{% url 'learning:course_learn' course.slug %}" class="btn btn-success w-100 mb-2">
+                Lanjutkan Belajar
+              </a>
+            {% else %}
+              <form method="post" class="d-grid">
+                {% csrf_token %}
+                <button type="submit" name="enroll" class="btn btn-primary btn-lg">
+                  Enroll Kursus
+                </button>
+              </form>
+            {% endif %}
+          {% else %}
+            <a href="{% url 'login' %}?next={{ request.path }}" class="btn btn-primary w-100 mb-2">
+              Login untuk Enroll
+            </a>
+            <a href="{% url 'learning:register' %}" class="btn btn-outline-secondary w-100">
+              Belum punya akun? Daftar
+            </a>
+          {% endif %}
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="row">
+    <div class="col-md-8">
+      <h4 class="mb-3">Daftar Materi</h4>
+      <ul class="list-group mb-4">
+        {% for lesson in course.lessons.all %}
+          <li class="list-group-item d-flex justify-content-between align-items-center">
+            <span>
+              <span class="badge bg-light text-dark border me-2">{{ forloop.counter }}</span>
+              {{ lesson.title }}
+              {% if lesson.is_preview %}
+                <span class="badge bg-success ms-1">Preview</span>
+              {% endif %}
+            </span>
+            {% if enrollment %}
+              <a href="{% url 'learning:course_learn' course.slug %}" class="btn btn-sm btn-outline-primary">
+                Buka
+              </a>
+            {% endif %}
+          </li>
+        {% empty %}
+          <li class="list-group-item text-muted">Belum ada materi pada kursus ini.</li>
+        {% endfor %}
+      </ul>
+
+      <h4 class="mb-3">Komentar &amp; Diskusi</h4>
+      {% if user.is_authenticated %}
+        <form method="post" class="mb-3">
+          {% csrf_token %}
+          {{ comment_form.as_p }}
+          <button type="submit" name="comment_submit" class="btn btn-sm btn-primary">Kirim Komentar</button>
+        </form>
+      {% else %}
+        <p>
+          <a href="{% url 'login' %}?next={{ request.path }}">Login</a>
+          untuk ikut berdiskusi.
+        </p>
+      {% endif %}
+
+      <div class="list-group mb-4">
+        {% for comment in comments %}
+          <div class="list-group-item">
+            <div class="d-flex justify-content-between">
+              <strong>{{ comment.user.get_full_name|default:comment.user.username }}</strong>
+              <span class="text-muted small">{{ comment.created_at|date:"d M Y H:i" }}</span>
+            </div>
+            <p class="mb-0">{{ comment.content|linebreaks }}</p>
+          </div>
+        {% empty %}
+          <p class="text-muted">Belum ada komentar.</p>
+        {% endfor %}
+      </div>
+    </div>
+    <div class="col-md-4">
+      <h4 class="mb-3">Rating &amp; Review</h4>
+      {% if enrollment and user.is_authenticated %}
+        <form method="post" class="mb-3">
+          {% csrf_token %}
+          {{ review_form.as_p }}
+          <button type="submit" name="review_submit" class="btn btn-sm btn-primary">Simpan Review</button>
+        </form>
+      {% elif not user.is_authenticated %}
+        <p>
+          <a href="{% url 'login' %}?next={{ request.path }}">Login</a>
+          untuk memberikan review.
+        </p>
+      {% endif %}
+
+      <div class="list-group">
+        {% for review in reviews %}
+          <div class="list-group-item">
+            <div class="d-flex justify-content-between mb-1">
+              <strong>{{ review.user.get_full_name|default:review.user.username }}</strong>
+              <span class="text-warning">
+                {% for i in "12345" %}
+                  {% if forloop.counter <= review.rating %}
+                    ★
+                  {% else %}
+                    ☆
+                  {% endif %}
+                {% endfor %}
+              </span>
+            </div>
+            <p class="mb-1 small text-muted">{{ review.created_at|date:"d M Y" }}</p>
+            <p class="mb-0">{{ review.content|linebreaks }}</p>
+          </div>
+        {% empty %}
+          <p class="text-muted">Belum ada review.</p>
+        {% endfor %}
+      </div>
+    </div>
+  </div>
+{% endblock %}
