@@ -1,0 +1,84 @@
+{% extends "learning/base.html" %}
+
+{% block title %}Dashboard Instruktur - EduPlatform{% endblock %}
+
+{% block content %}
+  <div class="d-flex justify-content-between align-items-center mb-3">
+    <h1 class="h4 mb-0">Dashboard Instruktur</h1>
+    <div>
+      <a href="{% url 'learning:course_create' %}" class="btn btn-primary btn-sm">
+        + Buat Kursus Baru
+      </a>
+    </div>
+  </div>
+
+  <div class="card shadow-sm border-0">
+    <div class="card-body">
+      <h5 class="card-title mb-3">Kursus Saya</h5>
+      <div class="table-responsive">
+        <table class="table align-middle">
+          <thead>
+            <tr>
+              <th>Judul</th>
+              <th>Level</th>
+              <th>Dipublikasikan</th>
+              <th>Siswa</th>
+              <th>Dibuat</th>
+              <th>Aksi</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for course in courses %}
+              <tr>
+                <td>
+                  <a href="{{ course.get_absolute_url }}">{{ course.title }}</a>
+                </td>
+                <td>{{ course.get_level_display }}</td>
+                <td>
+                  {% if course.is_published %}
+                    <span class="badge bg-success">Ya</span>
+                  {% else %}
+                    <span class="badge bg-secondary">Draft</span>
+                  {% endif %}
+                </td>
+                <td>{{ course.num_students }}</td>
+                <td>{{ course.created_at|date:"d M Y" }}</td>
+                <td>
+                  <a
+                    href="{% url 'learning:course_edit' course.slug %}"
+                    class="btn btn-sm btn-outline-primary"
+                  >
+                    Edit
+                  </a>
+                  <a
+                    href="{% url 'learning:lesson_create' course.slug %}"
+                    class="btn btn-sm btn-outline-secondary"
+                  >
+                    Tambah Materi
+                  </a>
+                  <form
+                    action="{% url 'learning:course_delete' course.slug %}"
+                    method="post"
+                    class="d-inline"
+                    onsubmit="return confirm('Yakin ingin menghapus kursus ini?');"
+                  >
+                    {% csrf_token %}
+                    <button type="submit" class="btn btn-sm btn-outline-danger">
+                      Hapus
+                    </button>
+                  </form>
+                </td>
+              </tr>
+            {% empty %}
+              <tr>
+                <td colspan="6" class="text-center text-muted">
+                  Anda belum memiliki kursus. Mulai dengan membuat kursus baru.
+                </td>
+              </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+{% endblock %}

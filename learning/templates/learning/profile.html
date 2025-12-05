@@ -1,0 +1,57 @@
+{% extends "learning/base.html" %}
+
+{% block title %}Profil - {{ user.get_full_name|default:user.username }}{% endblock %}
+
+{% block content %}
+  <h1 class="h4 mb-3">Profil Saya</h1>
+  <div class="row">
+    <div class="col-md-4 mb-3">
+      <div class="card shadow-sm border-0">
+        <div class="card-body text-center">
+          {% if user.avatar %}
+            <img src="{{ user.avatar.url }}" class="rounded-circle mb-3" width="100" height="100" alt="Avatar">
+          {% else %}
+            <div class="avatar-placeholder rounded-circle mb-3 d-flex align-items-center justify-content-center">
+              <span class="fw-bold">{{ user.get_full_name|default:user.username|first|upper }}</span>
+            </div>
+          {% endif %}
+          <h5 class="card-title mb-0">{{ user.get_full_name|default:user.username }}</h5>
+          <p class="text-muted small mb-2">
+            {% if user.role == 'instructor' %}
+              Instruktur
+            {% else %}
+              Siswa
+            {% endif %}
+          </p>
+          <p class="small mb-0">{{ user.email }}</p>
+        </div>
+      </div>
+    </div>
+    <div class="col-md-8">
+      <h5 class="mb-3">Kursus yang Diikuti</h5>
+      <div class="list-group">
+        {% for enrollment in enrollments %}
+          <a
+            href="{% url 'learning:course_learn' enrollment.course.slug %}"
+            class="list-group-item list-group-item-action d-flex justify-content-between align-items-center"
+          >
+            <div>
+              <div class="fw-bold">{{ enrollment.course.title }}</div>
+              <div class="small text-muted">
+                Enroll: {{ enrollment.enrolled_at|date:"d M Y" }}
+                {% if enrollment.is_completed %}
+                  • Selesai: {{ enrollment.completed_at|date:"d M Y" }}
+                {% endif %}
+              </div>
+            </div>
+            <span class="badge bg-primary rounded-pill">
+              {{ enrollment.progress_percentage }}%
+            </span>
+          </a>
+        {% empty %}
+          <p class="text-muted">Anda belum mengikuti kursus apapun.</p>
+        {% endfor %}
+      </div>
+    </div>
+  </div>
+{% endblock %}

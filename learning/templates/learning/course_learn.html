@@ -1,0 +1,132 @@
+{% extends "learning/base.html" %}
+
+{% block title %}Belajar: {{ course.title }} - EduPlatform{% endblock %}
+
+{% block content %}
+  <div class="row mb-3">
+    <div class="col-md-8">
+      <h1 class="h4 mb-1">{{ course.title }}</h1>
+      <p class="text-muted mb-0">
+        Progres belajar:
+        <strong>{{ progress_percentage }}%</strong>
+      </p>
+      <div class="progress mt-2" style="height: 8px;">
+        <div
+          class="progress-bar"
+          role="progressbar"
+          style="width: {{ progress_percentage }}%;"
+          aria-valuenow="{{ progress_percentage }}"
+          aria-valuemin="0"
+          aria-valuemax="100"
+        ></div>
+      </div>
+    </div>
+    <div class="col-md-4 text-md-end mt-3 mt-md-0">
+      {% if enrollment.is_completed %}
+        <a href="{% url 'learning:certificate' course.slug %}" class="btn btn-success">
+          Lihat Sertifikat
+        </a>
+      {% endif %}
+    </div>
+  </div>
+
+  <div class="row">
+    <div class="col-md-8">
+      <h4 class="mb-3">Materi Kursus</h4>
+      <div class="accordion" id="lessonAccordion">
+        {% for lesson in lessons %}
+          {% with progress=enrollment.lesson_progresses.all|dictsort:"lesson.id" %}
+          {% endwith %}
+          <div class="accordion-item">
+            <h2 class="accordion-header" id="heading{{ lesson.id }}">
+              <button
+                class="accordion-button collapsed"
+                type="button"
+                data-bs-toggle="collapse"
+                data-bs-target="#collapse{{ lesson.id }}"
+                aria-expanded="false"
+                aria-controls="collapse{{ lesson.id }}"
+              >
+                <span class="me-2 badge bg-light text-dark border">{{ forloop.counter }}</span>
+                {{ lesson.title }}
+              </button>
+            </h2>
+            <div
+              id="collapse{{ lesson.id }}"
+              class="accordion-collapse collapse"
+              aria-labelledby="heading{{ lesson.id }}"
+              data-bs-parent="#lessonAccordion"
+            >
+              <div class="accordion-body">
+                <div class="lesson-content mb-3">
+                  {{ lesson.content|safe }}
+                </div>
+                {% if lesson.video_url %}
+                  <div class="mb-3">
+                    <a href="{{ lesson.video_url }}" target="_blank" rel="noopener" class="btn btn-sm btn-outline-secondary">
+                      Buka Video
+                    </a>
+                  </div>
+                {% endif %}
+                {% if lesson.attachment %}
+                  <div class="mb-3">
+                    <a href="{{ lesson.attachment.url }}" class="btn btn-sm btn-outline-secondary" target="_blank">
+                      Download Materi
+                    </a>
+                  </div>
+                {% endif %}
+                <form method="post">
+                  {% csrf_token %}
+                  <input type="hidden" name="lesson_id" value="{{ lesson.id }}">
+                  <button
+                    type="submit"
+                    name="complete_lesson"
+                    class="btn btn-sm btn-outline-success"
+                  >
+                    Tandai Selesai
+                  </button>
+                </form>
+              </div>
+            </div>
+          </div>
+        {% empty %}
+          <p class="text-muted">Belum ada materi pada kursus ini.</p>
+        {% endfor %}
+      </div>
+    </div>
+    <div class="col-md-4">
+      <h4 class="mb-3">Quiz &amp; Ujian</h4>
+      <div class="list-group mb-4">
+        {% for quiz in quizzes %}
+          <a
+            href="{% url 'learning:quiz_detail' course.slug quiz.id %}"
+            class="list-group-item list-group-item-action d-flex justify-content-between align-items-center"
+          >
+            <span>{{ quiz.title }}</span>
+            {% if quiz.is_final %}
+              <span class="badge bg-warning text-dark">Ujian Akhir</span>
+            {% endif %}
+          </a>
+        {% empty %}
+          <p class="text-muted">Belum ada quiz pada kursus ini.</p>
+        {% endfor %}
+      </div>
+
+      <div class="card">
+        <div class="card-body">
+          <h5 class="card-title">Informasi Kursus</h5>
+          <p class="card-text small">
+            Instruktur:
+            <strong>{{ course.instructor.get_full_name|default:course.instructor.username }}</strong>
+          </p>
+          <p class="card-text small mb-0">
+            Mulai: {{ enrollment.enrolled_at|date:"d M Y" }}<br>
+            {% if enrollment.is_completed %}
+              Selesai: {{ enrollment.completed_at|date:"d M Y" }}
+            {% endif %}
+          </p>
+        </div>
+      </div>
+    </div>
+  </div>
+{% endblock %}

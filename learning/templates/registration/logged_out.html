@@ -1,0 +1,13 @@
+{% extends "learning/base.html" %}
+
+{% block title %}Logout - EduPlatform{% endblock %}
+
+{% block content %}
+  <div class="row justify-content-center">
+    <div class="col-md-6 text-center">
+      <h1 class="h4 mb-3">Anda telah logout</h1>
+      <p class="mb-3">Terima kasih telah menggunakan EduPlatform.</p>
+      <a href="{% url 'learning:home' %}" class="btn btn-primary">Kembali ke Beranda</a>
+    </div>
+  </div>
+{% endblock %}
